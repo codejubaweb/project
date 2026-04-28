@@ -7,17 +7,51 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Accept Licenses
-        run: yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+      - name: Accept SDK Licenses
+        run: |
+          mkdir -p $ANDROID_SDK_ROOT/licenses
+          echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
+          echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
+
+      - name: Install SDK
+        run: yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platforms;android-33" "build-tools;33.0.2" || true
+
       - name: Setup Gradle
-        run: cd twa-app && gradle wrapper --gradle-version=8.2
+        run: cd twa-app && gradle wrapper --gradle-version=7.5
+
       - name: Build APK
-        run: cd twa-app && ANDROID_SDK_ROOT=/usr/local/lib/android/sdk ./gradlew assembleRelease
+        run: |
+          cd twa-app
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Sign APK
+        run: |
+          keytool -genkey -v \
+            -keystore juba.keystore \
+            -alias juba \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass jubajuba \
+            -keypass jubajuba \
+            -dname "CN=JUBA, OU=Dev, O=JUBA, L=City, S=State, C=US"
+          
+          $ANDROID_SDK_ROOT/build-tools/33.0.2/apksigner sign \
+            --ks juba.keystore \
+            --ks-key-alias juba \
+            --ks-pass pass:jubajuba \
+            --key-pass pass:jubajuba \
+            --out twa-app/app/build/outputs/apk/release/juba-editor-pro.apk \
+            twa-app/app/build/outputs/apk/release/app-release-unsigned.apk
+
       - uses: actions/upload-artifact@v4
         with:
           name: juba-apk
-          path: twa-app/app/build/outputs/apk/release/app-release-unsigned.apk
+          path: twa-app/app/build/outputs/apk/release/juba-editor-pro.apk
