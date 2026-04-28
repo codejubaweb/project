@@ -1,42 +1,28 @@
 name: Build APK
-
 on:
   push:
     branches: [main]
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
-
-      - name: Install and Build
-        run: |
-          npm install
-          npm run build
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-
       - name: Install Bubblewrap
         run: npm install -g @bubblewrap/cli
-
       - name: Build APK
         run: |
-          bubblewrap init --manifest https://juba-editor-pro.vercel.app/manifest.json --directory twa
-          cd twa
-          bubblewrap build --skipPwaValidation
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+          bubblewrap init --manifest https://juba-editor-pro.vercel.app/manifest.json --directory twa --jdk-path $JAVA_HOME --android-sdk-path $ANDROID_HOME
+          cd twa && bubblewrap build --skipPwaValidation
+        env:
+          ANDROID_HOME: /usr/local/lib/android/sdk
+      - uses: actions/upload-artifact@v4
         with:
           name: juba-apk
           path: twa/app-release-signed.apk
