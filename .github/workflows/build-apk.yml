@@ -23,7 +23,7 @@ jobs:
         run: yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platforms;android-33" "build-tools;33.0.2" || true
 
       - name: Setup Gradle
-        run: cd twa-app && gradle wrapper --gradle-version=7.5
+        run: cd twa-app && gradle wrapper --gradle-version=8.2
 
       - name: Build APK
         run: |
