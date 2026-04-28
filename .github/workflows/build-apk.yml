@@ -16,22 +16,88 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Bubblewrap
-        run: npm install -g @bubblewrap/cli
+      - name: Create TWA Project
+        run: |
+          mkdir -p twa-app
+          cd twa-app
+          
+          # إنشاء هيكل المشروع
+          mkdir -p app/src/main/res/values
+          mkdir -p app/src/main/res/xml
+          mkdir -p app/src/main/java/com/juba/editorpro
+          
+          # build.gradle الرئيسي
+          cat > build.gradle << 'GRADLE'
+          buildscript {
+              repositories { google(); mavenCentral() }
+              dependencies { classpath 'com.android.tools.build:gradle:8.2.0' }
+          }
+          allprojects { repositories { google(); mavenCentral() } }
+          GRADLE
+          
+          # settings.gradle
+          echo "include ':app'" > settings.gradle
+          
+          # app/build.gradle
+          cat > app/build.gradle << 'APPGRADLE'
+          plugins { id 'com.android.application' }
+          android {
+              compileSdk 34
+              defaultConfig {
+                  applicationId "com.juba.editorpro"
+                  minSdk 21
+                  targetSdk 34
+                  versionCode 1
+                  versionName "11.0"
+              }
+              buildTypes {
+                  release { minifyEnabled false }
+              }
+              namespace "com.juba.editorpro"
+          }
+          dependencies {
+              implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
+          }
+          APPGRADLE
+          
+          # AndroidManifest.xml
+          cat > app/src/main/AndroidManifest.xml << 'MANIFEST'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <application
+                  android:label="JUBA Editor Pro"
+                  android:theme="@style/Theme.LauncherActivity">
+                  <activity android:name="com.google.androidbrowserhelper.trusted.LauncherActivity">
+                      <meta-data android:name="android.support.customtabs.trusted.DEFAULT_URL"
+                          android:value="https://juba-editor-pro.vercel.app" />
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN"/>
+                          <category android:name="android.intent.category.LAUNCHER"/>
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          MANIFEST
+          
+          # styles.xml
+          cat > app/src/main/res/values/styles.xml << 'STYLES'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <style name="Theme.LauncherActivity" parent="Theme.AppCompat.NoActionBar">
+                  <item name="android:windowBackground">@android:color/black</item>
+              </style>
+          </resources>
+          STYLES
+          
+          # gradle wrapper
+          gradle wrapper --gradle-version=8.2
 
       - name: Build APK
         run: |
-          bubblewrap init \
-            --manifest https://juba-editor-pro.vercel.app/manifest.json \
-            --directory twa \
-            --jdk-path $JAVA_HOME \
-            --android-sdk-path $ANDROID_SDK_ROOT
-          cd twa
-          bubblewrap build --skipPwaValidation \
-            --jdk-path $JAVA_HOME \
-            --android-sdk-path $ANDROID_SDK_ROOT
+          cd twa-app
+          ./gradlew assembleRelease
 
       - uses: actions/upload-artifact@v4
         with:
           name: juba-apk
-          path: twa/app-release-signed.apk
+          path: twa-app/app/build/outputs/apk/release/app-release-unsigned.apk
