@@ -7,24 +7,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-
       - name: Accept Android Licenses
-        run: |
-          yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
-
+        run: yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
       - name: Create TWA Project
         run: |
           mkdir -p twa-app/app/src/main/res/values
-
           cat > twa-app/settings.gradle << 'GRADLE'
 include ':app'
 GRADLE
-
           cat > twa-app/build.gradle << 'GRADLE'
 buildscript {
     repositories { google(); mavenCentral() }
@@ -32,12 +26,10 @@ buildscript {
 }
 allprojects { repositories { google(); mavenCentral() } }
 GRADLE
-
           cat > twa-app/gradle.properties << 'PROPS'
 android.useAndroidX=true
 android.enableJetifier=true
 PROPS
-
           cat > twa-app/app/build.gradle << 'GRADLE'
 plugins { id 'com.android.application' }
 android {
@@ -56,14 +48,15 @@ dependencies {
     implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
 }
 GRADLE
-
           cat > twa-app/app/src/main/AndroidManifest.xml << 'MANIFEST'
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
         android:label="JUBA Editor Pro"
         android:theme="@style/Theme.LauncherActivity">
-        <activity android:name="com.google.androidbrowserhelper.trusted.LauncherActivity" android:exported="true">
+        <activity
+            android:name="com.google.androidbrowserhelper.trusted.LauncherActivity"
+            android:exported="true">
             <meta-data android:name="android.support.customtabs.trusted.DEFAULT_URL"
                 android:value="https://juba-editor-pro.vercel.app" />
             <intent-filter>
@@ -74,7 +67,6 @@ GRADLE
     </application>
 </manifest>
 MANIFEST
-
           cat > twa-app/app/src/main/res/values/styles.xml << 'STYLES'
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
@@ -83,14 +75,11 @@ MANIFEST
     </style>
 </resources>
 STYLES
-
           cd twa-app && gradle wrapper --gradle-version=8.2
-
       - name: Build APK
         run: |
           cd twa-app
           ANDROID_SDK_ROOT=/usr/local/lib/android/sdk ./gradlew assembleRelease
-
       - uses: actions/upload-artifact@v4
         with:
           name: juba-apk
