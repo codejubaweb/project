@@ -7,22 +7,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Install Bubblewrap
         run: npm install -g @bubblewrap/cli
+
       - name: Build APK
         run: |
-          yes "no" | bubblewrap init \
+          bubblewrap init \
             --manifest https://juba-editor-pro.vercel.app/manifest.json \
-            --directory twa
+            --directory twa \
+            --jdk-path $JAVA_HOME \
+            --android-sdk-path $ANDROID_SDK_ROOT
           cd twa
-          yes "" | bubblewrap build --skipPwaValidation
-        env:
-          ANDROID_HOME: /usr/local/lib/android/sdk
-          JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17*/x64
+          bubblewrap build --skipPwaValidation \
+            --jdk-path $JAVA_HOME \
+            --android-sdk-path $ANDROID_SDK_ROOT
+
       - uses: actions/upload-artifact@v4
         with:
           name: juba-apk
