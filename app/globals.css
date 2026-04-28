@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@theme {
+  --font-space: var(--font-space);
+  --font-mono: var(--font-mono);
+}
+
+:root {
+  --bg-main: #0A0F2C;
+  --bg-sidebar: #080C24;
+  --bg-header: #0D1438;
+  --bg-preview: #0D1438;
+  --accent-primary: #00E8FF;
+  --accent-success: #64FFDA;
+  --text-primary: #FFFFFF;
+  --text-secondary: #8892B0;
+  --border-juba: rgba(136, 146, 176, 0.2);
+  
+  --sidebar-width: 260px;
+  --header-height: 48px;
+}
+
+@layer base {
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--bg-sidebar);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #1D2A5E;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-primary);
+  }
+}
+
+.juba-glass {
+  background: rgba(10, 15, 44, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-juba);
+}
+
+.glow-accent {
+  box-shadow: 0 0 15px rgba(0, 232, 255, 0.3);
+}
+
+.transition-juba {
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.transition-juba-slow {
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.border-juba {
+  border: 1px solid var(--border-juba);
+}
+
+.bento-panel {
+  background-color: var(--bg-main);
+  border: 1px solid var(--border-juba);
+  overflow: hidden;
+}
